@@ -4,7 +4,7 @@
 
 
 ## Support 
-<a href="https://t.me/haxis_lancelot"><img src="https://img.shields.io/badge/Join-Telegram%20Channel-red.svg?logo=Telegram"></a>
+<a href="https://t.me/apollonplus"><img src="https://img.shields.io/badge/Join-Telegram%20Channel-red.svg?logo=Telegram"></a>
 
 ## Disclaimer
 ```
