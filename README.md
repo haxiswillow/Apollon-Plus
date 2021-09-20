@@ -19,7 +19,6 @@
 * Magisk 23.0+
 * Latest Busybox
 * Android 5.0+
-* MongoDB [Database URL](https://cloud.mongodb.com/)
 ## How To Install
 * Download the module.
 * Go to your Magisk, enter the module menu and click in
