@@ -34,4 +34,4 @@
   * Profiles [ GAMING / PERFORMANCE / BALANCED / BATTERY ]
   * Fastcharge / Green
   * Automatic Tweaker / Balanced Profile
-  * ...and more
+* ...and more
