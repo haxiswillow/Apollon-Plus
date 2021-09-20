@@ -54,7 +54,6 @@ fi
 
 ui_print "[*] Installing Basic Features..."
 pm install $MODPATH/Toast.apk
-wget -O "$MODPATH/system/bin/apollontweaks" "https://raw.githubusercontent.com/haxiswillow/Apollon-Plus/main/system/bin/apollontweaks"
 
 SKIPUNZIP=1
 unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
