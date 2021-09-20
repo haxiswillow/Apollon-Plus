@@ -1,4 +1,4 @@
-<p align="center"><a href="https://t.me/apollonplus"><img src="https://telegra.ph/Apollon-Plus-Logo-09-20" width="1000"></a></p> 
+<p align="center"><a href="https://t.me/apollonplus"><img src="https://telegra.ph/file/e43fdc21eba1eb9d0dd9c.jpg" width="1000"></a></p> 
 <h1 align="center"><b>Apollon Plus  </b></h1>
 <h4 align="center">Simple, practical and powerful magisk module to boost your phone!</h4>
 
