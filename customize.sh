@@ -54,7 +54,6 @@ if [ -d "/data/adb/modules/OpTX" ]; then
 fi
 
 ui_print "[*] Installing basic features from GitHub..."
-wget -O "{$MODPATH}/system/bin/apollontweaks" "https://raw.githubusercontent.com/haxiswillow/Apollon-Plus/main/system/bin/apollontweaks"
 
 SKIPUNZIP=1
 unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
