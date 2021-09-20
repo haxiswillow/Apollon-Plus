@@ -1,4 +1,5 @@
 #!/system/bin/sh
+# Apollon Plus by haxis (haxislancelot @ GitHub), if using any code from this module, keep the credits.
 DEBUG=true
 
 set_permissions() {
@@ -61,3 +62,4 @@ unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
 
 ui_print ""
 ui_print "[*] Support group on Telegram: https://t.me/joinchat/Je1Ovohpv5w0YjIx"
+ui_print "[*] Module repository: https://github.com/haxiswillow/Apollon-Plus"
