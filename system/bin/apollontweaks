@@ -1,0 +1,179 @@
+#!/system/bin/sh
+# Written by Draco (tytydraco @ GitHub)
+# Edited by Haxis (haxislancelot @ GitHub)
+ 
+
+# Reset log file
+rm /data/local/tmp/ktweak_log.txt
+
+# Log in red and exit
+err() {
+	echo -e "[!] $@" >> /data/local/tmp/ktweak_log.txt
+	[[ "$DEBUG" -eq 1 ]] && echo -e "\e[91m[!] $@\e[39m"
+}
+
+# Log in white and continue (unnecessary)
+dbg() {
+	echo -e "[*] $@" >> /data/local/tmp/ktweak_log.txt
+	[[ "$DEBUG" -eq 1 ]] && echo -e "[*] $@"
+}
+
+# Safely write value to file
+_write() {
+	# Bail out if file does not exist
+	if [[ ! -f "$1" ]]
+	then
+		err "File $1 does not exist. Skipping."
+		return 1
+	fi
+
+	# Fetch the current key value
+	local curval=`cat "$1" 2> /dev/null`
+
+	# Bail out if value is already set
+	if [[ "$curval" == "$2" ]]
+	then
+		dbg "File $1 is already set to $2. Skipping."
+		return 0
+	fi
+
+	# Write the new value
+	echo "$2" > "$1"
+
+	# Bail out if write fails
+	if [[ $? -ne 0 ]]
+	then
+		err "Failed to write $2 to $1. Skipping."
+		return 1
+	fi
+
+	dbg "Wrote $1: $curval --> $2"
+}
+
+# Background fork write function
+write() {
+	if [[ "$SYNC" -eq 1 ]]
+	then
+		_write "$@"
+	else
+		_write "$@" &
+	fi
+}
+
+usage() {
+	echo -n "Usage: `basename $0` [OPTIONS]
+Options:
+  -d			Show debug logs
+  -s			Synchronous mode
+  -h			Show usage
+"
+}
+
+# Check for root permissions
+[[ `id -u` -ne 0 ]] && err "No root permissions. Exiting."
+
+while getopts ":dsh" opt; do
+	case $opt in
+		d)
+			DEBUG=1
+			;;
+		s)
+			SYNC=1
+			;;
+		h)
+			usage
+			exit 0
+			;;
+		*)
+			usage
+			exit 1
+			;;
+	esac
+done
+shift $((OPTIND-1))
+
+# Print device information prior to execution
+
+# Kernel and device information
+dbg `uname -a`
+
+# Scheduler feature check
+[[ -f "/sys/kernel/debug/sched_features" ]] && dbg "Scheduler features exposed."
+
+# CPU boost check
+[[ -d "/sys/module/cpu_boost" ]] && dbg "CAF CPU boost detected."
+
+# ZRAM support state
+[[ -d "/sys/block/zram0" ]] && dbg "ZRAM supported."
+
+# Kernel
+write /proc/sys/kernel/perf_cpu_time_max_percent 5
+write /proc/sys/kernel/sched_autogroup_enabled 1
+write /proc/sys/kernel/sched_enable_thread_grouping 1
+write /proc/sys/kernel/sched_child_runs_first 1
+write /proc/sys/kernel/sched_tunable_scaling 0
+write /proc/sys/kernel/sched_latency_ns 5000000
+write /proc/sys/kernel/sched_min_granularity_ns 500000
+write /proc/sys/kernel/sched_wakeup_granularity_ns 1000000
+write /proc/sys/kernel/sched_migration_cost_ns 1000000
+write /proc/sys/kernel/sched_min_task_util_for_colocation 0
+write /proc/sys/kernel/sched_nr_migrate 16
+write /proc/sys/kernel/sched_schedstats 0
+
+# VM
+write /proc/sys/vm/dirty_background_ratio 10
+write /proc/sys/vm/dirty_ratio 30
+write /proc/sys/vm/dirty_expire_centisecs 1000
+write /proc/sys/vm/dirty_writeback_centisecs 1000
+write /proc/sys/vm/page-cluster 0
+write /proc/sys/vm/reap_mem_on_sigkill 1
+write /proc/sys/vm/stat_interval 10
+write /proc/sys/vm/swappiness 100
+write /proc/sys/vm/vfs_cache_pressure 60
+
+# Scheduler features
+if [[ -f "/sys/kernel/debug/sched_features" ]]
+then
+	write /sys/kernel/debug/sched_features NEXT_BUDDY
+	write /sys/kernel/debug/sched_features TTWU_QUEUE
+fi
+
+# CPU
+for cpu in /sys/devices/system/cpu/cpu*/cpufreq/
+do
+	avail_govs=`cat "${cpu}scaling_available_governors"`
+	if [[ "$avail_govs" == *"schedutil"* ]]
+	then
+		_write "${cpu}scaling_governor" schedutil
+		write "${cpu}schedutil/up_rate_limit_us" 10000
+		write "${cpu}schedutil/down_rate_limit_us" 10000
+		write "${cpu}schedutil/rate_limit_us" 10000
+		write "${cpu}schedutil/hispeed_load" 80 
+		write "${cpu}schedutil/hispeed_freq" `cat "${cpu}cpuinfo_max_freq"`
+	elif [[ "$avail_govs" == *"interactive"* ]]
+	then
+		_write "${cpu}scaling_governor" interactive
+		write "${cpu}interactive/min_sample_time" 10000
+		write "${cpu}interactive/go_hispeed_load" 80
+		write "${cpu}interactive/hispeed_freq" `cat "${cpu}cpuinfo_max_freq"`
+	fi
+done
+
+# I/O
+for queue in /sys/block/*/queue/
+do
+	avail_scheds=`cat "${queue}scheduler"`
+	for sched in cfq noop kyber bfq mq-deadline none
+	do
+		if [[ "$avail_scheds" == *"$sched"* ]]
+		then
+			_write "${queue}scheduler" "$sched"
+			break
+		fi
+	done
+	write "${queue}iostats" 0
+	write "${queue}read_ahead_kb" 64
+	write "${queue}nr_requests" 64
+done
+
+exit 0
