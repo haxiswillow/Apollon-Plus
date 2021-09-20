@@ -53,7 +53,7 @@ if [ -d "/data/adb/modules/OpTX" ]; then
 fi
 
 ui_print "[*] Installing Basic Features..."
-pm install $MODPATH/Toast.apk
+pm install "$MODPATH"/Toast.apk
 
 SKIPUNZIP=1
 unzip -qjo "$ZIPFILE" 'common/functions.sh' -d $TMPDIR >&2
